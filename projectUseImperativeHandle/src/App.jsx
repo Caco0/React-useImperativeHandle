@@ -1,4 +1,10 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import './App.css';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
@@ -11,12 +17,13 @@ function App() {
 
   useLayoutEffect(() => {
     const now = Date.now();
-    while (Date.now() < now + 600);
-    divRef.current.scrollTop = divRef.current.scrollHeight;
+    while (Date.now() < now + 200);
+    divRef.current.divRef.scrollTop = divRef.current.divRef.scrollHeight;
   });
 
   const handleClick = () => {
     setCounted((c) => [...c, +c.slice(-1) + 1]);
+    divRef.current.handleClick();
   };
 
   return (
@@ -39,16 +46,41 @@ function App() {
       <div>
         <button onClick={handleClick}>Contador {counted.slice(-1)} </button>
       </div>
-      <div
-        ref={divRef}
-        style={{ height: '200px', width: '100px', overflow: 'scroll' }}
-      >
-        {counted.map((c) => {
-          return <p key={`c-${c}`}> {c} </p>;
-        })}
+      <div>
+        <DisplayCounted counted={counted} ref={divRef} />
       </div>
     </>
   );
 }
 
 export default App;
+
+export const DisplayCounted = forwardRef(function DisplayCounted(
+  { counted },
+  ref
+) {
+  const [rand, setRand] = useState('0.248');
+  const divRef = useRef();
+
+  const handleClick = () => {
+    setRand(Math.random().toFixed(2));
+  };
+
+  useImperativeHandle(ref, () => ({ handleClick, divRef: divRef.current }));
+
+  return (
+    <div
+      ref={divRef}
+      style={{ height: '200px', width: '150px', overflow: 'scroll' }}
+    >
+      {counted.map((c) => {
+        return (
+          <p onClick={handleClick} key={`c-${c}`}>
+            {' '}
+            {c} +++ {rand}
+          </p>
+        );
+      })}
+    </div>
+  );
+});
